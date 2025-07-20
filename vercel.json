@@ -5,16 +5,5 @@
       "source": "/(.*)",
       "destination": "/AIAgent.html"
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Content-Type", 
-          "value": "text/html"
-        }
-      ]
-    }
   ]
 }

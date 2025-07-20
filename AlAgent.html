@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent - Gemini Flash</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4285f4, #34a853);
+            --secondary-gradient: linear-gradient(135deg, #ea4335, #fbbc05);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --dark-text: #202124;
+            --light-text: #5f6368;
+            --message-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --user-bubble: linear-gradient(135deg, #4285f4, #5b8ef7);
+            --agent-bubble: linear-gradient(135deg, #f1f3f4, #ffffff);
+            --accent-color: #ea4335;
+            --success-color: #34a853;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --stock-color: #8a2be2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #e4e7f0);
+            color: var(--dark-text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: var(--primary-gradient);
+            z-index: -1;
+            border-radius: 0 0 50% 50%;
+            transform: scale(1.5);
+        }
+
+        #header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            z-index: 10;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            z-index: -1;
+        }
+
+        #header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .logo i {
+            font-size: 24px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-text h1 {
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-text p {
+            font-size: 1rem;
+            opacity: 0.92;
+            font-weight: 300;
+        }
+
+        .powered-by {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            font-weight: 300;
+        }
+
+        .powered-by span {
+            opacity: 0.8;
+        }
+
+        .google-logo {
+            font-weight: 500;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .google-logo i {
+            color: #ea4335;
+        }
+
+        #chat-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            max-width: 900px;
+            width: 95%;
+            margin: 1.5rem auto;
+            background: var(--glass-bg);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        #chat-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f1f3f4' fill-opacity='0.2' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            z-index: -1;
+        }
+
+        #chat-history {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            word-wrap: break-word;
+            animation: fadeIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+
+        .message-content {
+            padding: 1.1rem 1.4rem;
+            border-radius: 20px;
+            box-shadow: var(--message-shadow);
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.5);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-items: flex-end;
+            margin-left: auto;
+        }
+
+        .user-message .message-content {
+            background: var(--user-bubble);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .agent-message {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+
+        .agent-message .message-content {
+            background: var(--agent-bubble);
+            border: 1px solid rgba(0,0,0,0.03);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .user-message .message-header {
+            justify-content: flex-end;
+        }
+
+        .agent-message .message-header {
+            justify-content: flex-start;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .user-message .avatar {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .agent-message .avatar {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .message-sender {
+            opacity: 0.9;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 6px;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.9rem 1.3rem;
+            background: var(--agent-bubble);
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.03);
+            border-bottom-left-radius: 5px;
+            width: fit-content;
+            box-shadow: var(--message-shadow);
+        }
+
+        .typing-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--light-text);
+            margin-right: 6px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:last-child {
+            margin-right: 0;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        #input-area {
+            display: flex;
+            padding: 1.2rem;
+            background: var(--card-bg);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            gap: 0.8rem;
+            position: relative;
+        }
+
+        #input-area::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to top, var(--card-bg), transparent);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 0.9rem 1.4rem;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s, transform 0.2s;
+            resize: none;
+            min-height: 50px;
+            max-height: 150px;
+        }
+
+        #user-input:focus {
+            box-shadow: 0 4px 16px rgba(66,133,244,0.15);
+            transform: translateY(-2px);
+        }
+
+        #user-input::placeholder {
+            color: #a0aec0;
+        }
+
+        #send-button {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0 1.8rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            box-shadow: 0 4px 12px rgba(66,133,244,0.25);
+        }
+
+        #send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(66,133,244,0.35);
+        }
+
+        #send-button:active {
+            transform: translateY(0);
+        }
+
+        #send-button:disabled {
+            background: #c2d6ff;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        #send-button i {
+            font-size: 1.2rem;
+        }
+
+        .tool-response {
+            background: white;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-top: 8px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .tool-response-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--success-color);
+            font-weight: 500;
+        }
+
+        .tool-response-header i {
+            font-size: 1.1rem;
+        }
+
+        .tool-response-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .tool-response-content pre {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .suggestion-box {
+            display: flex;
+            gap: 12px;
+            padding: 0 1.5rem 1.2rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .suggestion-box::-webkit-scrollbar {
+            display: none;
+        }
+
+        .suggestion {
+            background: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .suggestion:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .suggestion i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .quick-tools {
+            display: flex;
+            gap: 10px;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .tool-button {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 16px;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .tool-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            background: white;
+        }
+
+        .tool-button i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tool-button.stock-button i {
+            background: var(--stock-color);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #chat-history::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-history::-webkit-scrollbar-track {
+            background: rgba(241, 241, 241, 0.5);
+            border-radius: 10px;
+        }
+
+        #chat-history::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 10px;
+        }
+
+        #chat-history::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        @media (max-width: 768px) {
+            #chat-container {
+                border-radius: 20px 20px 0 0;
+                margin: 1rem auto 0;
+                width: 100%;
+                height: calc(100vh - 80px);
+            }
+            
+            #header {
+                padding: 1rem;
+            }
+            
+            .header-text h1 {
+                font-size: 1.4rem;
+            }
+            
+            .header-text p {
+                font-size: 0.85rem;
+            }
+            
+            .message {
+                max-width: 90%;
+                font-size: 0.95rem;
+            }
+            
+            .message-content {
+                padding: 1rem 1.2rem;
+            }
+            
+            #input-area {
+                padding: 1rem;
+            }
+            
+            #user-input {
+                font-size: 0.95rem;
+                padding: 0.8rem 1.2rem;
+            }
+            
+            #send-button {
+                padding: 0 1.4rem;
+                min-width: 55px;
+            }
+            
+            .logo {
+                width: 42px;
+                height: 42px;
+            }
+            
+            .suggestion-box {
+                padding: 0 1rem 1rem;
+            }
+            
+            .quick-tools {
+                padding: 0 1rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div id="header-content">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <div class="header-text">
+                <h1>AI Agent - Gemini Flash</h1>
+                <p>Your intelligent assistant for calculations, stocks, and more!</p>
+                <div class="powered-by">
+                    <span>Powered by</span>
+                    <div class="google-logo">
+                        <i class="fab fa-google"></i>
+                        <span>Gemini</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-container">
+        <div id="chat-history">
+            <!-- Initial greeting message -->
+            <div class="message agent-message">
+                <div class="message-header">
+                    <div class="avatar">A</div>
+                    <div class="message-sender">Gemini Flash</div>
+                </div>
+                <div class="message-content">
+                    Hello! I'm your AI assistant powered by Gemini Flash. I can help with math operations, stock prices, and more!
+                </div>
+                <div class="timestamp">Just now</div>
+            </div>
+        </div>
+
+        <div class="suggestion-box">
+            <div class="suggestion"><i class="fas fa-cloud-sun"></i> Weather in London</div>
+            <div class="suggestion"><i class="fas fa-chart-line"></i> Bitcoin price</div>
+            <div class="suggestion"><i class="fas fa-calculator"></i> 128 × 256</div>
+            <div class="suggestion"><i class="fas fa-chart-bar"></i> Tesla stock price</div>
+            <div class="suggestion"><i class="fas fa-dollar-sign"></i> Convert 100 USD to EUR</div>
+        </div>
+
+        <div class="quick-tools">
+            <div class="tool-button">
+                <i class="fas fa-sun"></i>
+                Weather
+            </div>
+            <div class="tool-button">
+                <i class="fas fa-coins"></i>
+                Crypto
+            </div>
+            <div class="tool-button">
+                <i class="fas fa-calculator"></i>
+                Calculate
+            </div>
+            <div class="tool-button stock-button">
+                <i class="fas fa-chart-line"></i>
+                Stocks
+            </div>
+            <div class="tool-button">
+                <i class="fas fa-exchange-alt"></i>
+                Convert
+            </div>
+        </div>
+
+        <div id="input-area">
+            <textarea id="user-input" placeholder="Ask me anything..." autocomplete="off" rows="1"></textarea>
+            <button id="send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Frontend UI Elements ---
+        const chatHistoryDiv = document.getElementById('chat-history');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const suggestions = document.querySelectorAll('.suggestion');
+        const toolButtons = document.querySelectorAll('.tool-button');
+
+        // --- Gemini API Configuration ---
+        const GEMINI_API_KEY = "AIzaSyBW9Cp29xuuvJHumLbt2NJsfnZvXoEBRE8";
+        const GEMINI_MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
+        // --- AI Agent Conversation History ---
+        const History = [
+            {
+                role: "user",
+                parts: [{ text: "Hello, who are you?" }]
+            },
+            {
+                role: "model",
+                parts: [{ text: "Hello! I'm your AI assistant powered by Gemini Flash. I can help with math operations, stock prices, and more!" }]
+            }
+        ];
+
+        // --- External Tool Functions ---
+        function sum({num1,num2}){
+            return num1+num2;
+        }
+        
+        function subtract({num1, num2}) {
+            return num1 - num2;
+        }
+        
+        function multiply({num1, num2}) {
+            return num1 * num2;
+        }
+
+        function prime({num}){
+            if(num<2)
+                return false;
+            for(let i=2;i<=Math.sqrt(num);i++)
+                if(num%i==0) return false
+            return true;
+        }
+
+        async function getCryptoPrice({coin}){
+           try {
+               const response = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coin}`);
+               if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+               const data = await response.json();
+               if (data.length === 0) return { error: `Coin "${coin}" not found.` };
+               return {
+                   name: data[0].name,
+                   current_price: data[0].current_price,
+                   market_cap: data[0].market_cap,
+                   price_change_24h: data[0].price_change_24h
+               };
+           } catch (error) {
+               console.error("Crypto Price Error:", error);
+               return { error: `Could not fetch crypto price for "${coin}": ${error.message}` };
+           }
+        }
+
+        async function getWeather({location}){
+            try {
+                const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=e9457d34f0374f9abf0113351252001&q=${location}&aqi=no`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Weather API request failed with status ${response.status}: ${errorText}`);
+                }
+                const data = await response.json();
+                return {
+                    location: data.location.name,
+                    temperature: data.current.temp_c,
+                    condition: data.current.condition.text,
+                    feels_like_c: data.current.feelslike_c,
+                    humidity: data.current.humidity,
+                    wind_kph: data.current.wind_kph
+                };
+            } catch (error) {
+                console.error("Weather Error:", error);
+                return { error: `Could not fetch weather for "${location}": ${error.message}` };
+            }
+        }
+
+        async function convertCurrency({ amount, from, to }) {
+          const API_KEY = "82c7accc3bbe06e2bd8f1a76";
+          const API_URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/pair/${from}/${to}`;
+
+          if (isNaN(amount)) return { error: "Amount must be a number" };
+          if (!from || !to || from.length !== 3 || to.length !== 3) {
+            return { error: "Both currencies need 3-letter codes (e.g. USD, EUR)" };
+          }
+
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+            const response = await fetch(API_URL, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`API Error ${response.status}: ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            if (data.result !== "success") {
+              throw new Error(data["error-type"] || "Conversion failed");
+            }
+
+            return {
+              amount: parseFloat(amount),
+              from: data.base_code,
+              to: data.target_code,
+              rate: data.conversion_rate,
+              converted: (amount * data.conversion_rate).toFixed(2),
+              lastUpdated: new Date(data.time_last_update_utc).toLocaleString(),
+            };
+
+          } catch (error) {
+            console.error("Currency Error:", error.message);
+            return {
+              error: `Currency conversion failed: ${error.message}`,
+              solution: "Try again later or check currency codes",
+              supportedCodes: ["USD", "EUR", "GBP", "JPY", "CAD", "INR"]
+            };
+          }
+        }
+
+        async function getWikiSummary({ topic }) {
+          try {
+            const response = await fetch(
+              `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`
+            );
+            
+            if (response.status === 404) {
+              return { error: "Topic not found on Wikipedia" };
+            }
+
+            const data = await response.json();
+            if (data.type === "disambiguation") {
+                return { error: `Ambiguous topic "${topic}". Please be more specific.` };
+            }
+            if (!data.extract) {
+                return { error: `No summary available for "${topic}".` };
+            }
+            return {
+              topic: data.title,
+              summary: data.extract,
+              url: data.content_urls.desktop.page
+            };
+          } catch (error) {
+            console.error("Wikipedia Fetch Failed:", error);
+            return { error: `Failed to fetch Wikipedia summary: ${error.message}` };
+          }
+        }
+
+        async function getStockPrice({ symbol }) {
+          try {
+            const FMP_API_KEY = "0NuWEbAVWU4QrOQhNqRT7o3Grk3vEfrm";
+            const response = await fetch(
+              `https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=${FMP_API_KEY}`
+            );
+            const data = await response.json();
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`FMP API Error ${response.status}: ${errorText}`);
+            }
+
+            if (!data || data.length === 0 || data[0].symbol !== symbol.toUpperCase()) {
+              return { error: `Invalid stock symbol: ${symbol} or no data found.` };
+            }
+
+            return {
+              symbol: data[0].symbol,
+              name: data[0].name,
+              price: data[0].price,
+              change: data[0].change,
+              percentChange: data[0].changesPercentage,
+              dayHigh: data[0].dayHigh,
+              dayLow: data[0].dayLow
+            };
+          } catch (error) {
+            console.error("Stock Fetch Failed:", error);
+            return { error: `Stock data unavailable for ${symbol}: ${error.message}` };
+          }
+        }
+
+        // --- Tool Declarations for Gemini API ---
+        const sumDeclaration = {
+            name:'sum',
+            description:"Get the sum of 2 number",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    num1:{
+                        type:'NUMBER',
+                        description: 'It will be first number for addition ex: 10'
+                    },
+                    num2:{
+                        type:'NUMBER',
+                        description:'It will be Second number for addition ex: 10'
+                    }
+                },
+                required: ['num1','num2']   
+            }
+        };
+        
+        const subtractDeclaration = {
+            name:'subtract',
+            description:"Subtract the second number from the first number",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    num1:{
+                        type:'NUMBER',
+                        description: 'The number to subtract from'
+                    },
+                    num2:{
+                        type:'NUMBER',
+                        description:'The number to subtract'
+                    }
+                },
+                required: ['num1','num2']   
+            }
+        };
+        
+        const multiplyDeclaration = {
+            name:'multiply',
+            description:"Multiply two numbers",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    num1:{
+                        type:'NUMBER',
+                        description: 'First number to multiply'
+                    },
+                    num2:{
+                        type:'NUMBER',
+                        description:'Second number to multiply'
+                    }
+                },
+                required: ['num1','num2']   
+            }
+        };
+
+        const primeDeclaration = {
+            name:'prime',
+            description:"Get if number if prime or not",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    num:{
+                        type:'NUMBER',
+                        description: 'It will be the number to find it is prime or not ex: 13'
+                    },
+                },
+                required: ['num']   
+            }
+        };
+
+        const cryptoDeclaration = {
+            name:'getCryptoPrice',
+            description:"Get the current price of any crypto Currency in dollar like bitcoin",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    coin:{
+                        type:'STRING',
+                        description: 'It will be the crypto currency name, like bitcoin, ethereum, ripple'
+                    },
+                },
+                required: ['coin']   
+            }
+        };
+
+        const weatherDeclaration = {
+            name:'getWeather',
+            description:"Get the weather conditions and temperature in celsius of cities all over the world",
+            parameters:{
+                type:'OBJECT',
+                properties:{
+                    location:{
+                        type:'STRING',
+                        description: 'It will be the name of city, like London'
+                    }
+                },
+                required: ['location']   
+            }
+        };
+
+        const currencyDeclaration = {
+          name: 'convertCurrency',
+          description: "Convert between currencies using real ExchangeRate-API v6 rates. Provide 3-letter currency codes.",
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              amount: {
+                type: 'NUMBER',
+                description: 'Amount to convert (e.g. 100)'
+              },
+              from: {
+                type: 'STRING',
+                description: '3-letter base currency code (e.g. USD, EUR, INR). Example: For "rupees", use "INR".',
+                enum: ["AUD","ATS","BEF","BRL","CAD","CHF","CNY","DEM","DKK","ESP","EUR","FIM","FRF","GBP","GRD","HKD",
+                        "IEP",	"INR",	"IRR",	"ITL",	"JPY",	"KRW",	"LKR",	"MXN",
+                        "MYR",	"NOK",	"NLG",	"NZD",	"PTE",	"SEK",	"SGD",	"THB",
+                        "TWD",	"USD",	"ZAR"] 
+              },
+              to: {
+                type: 'STRING',
+                description: '3-letter target currency code (e.g. USD, EUR, INR)'
+              }
+            },
+            required: ['amount', 'from', 'to']
+          }
+        };
+
+        const wikiDeclaration = {
+          name: 'getWikiSummary',
+          description: "Get concise summaries from Wikipedia for any topic",
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              topic: { type: 'STRING', description: 'Topic to research on Wikipedia' }
+            },
+            required: ['topic']
+          }
+        };
+
+        const stockDeclaration = {
+          name: 'getStockPrice',
+          description: "Get real-time stock market data for a given ticker symbol",
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              symbol: { type: 'STRING', description: 'Stock ticker symbol (e.g., AAPL for Apple, MSFT for Microsoft, GOOGL for Google)' }
+            },
+            required: ['symbol']
+          }
+        };
+
+        // --- Map Tool Names to Actual Functions ---
+        const availableTools = {
+            sum: sum,
+            subtract: subtract,
+            multiply: multiply,
+            prime: prime,
+            getCryptoPrice: getCryptoPrice,
+            getWeather: getWeather,
+            convertCurrency: convertCurrency,
+            getWikiSummary: getWikiSummary,
+            getStockPrice: getStockPrice
+        };
+
+        // --- Helper Functions for UI ---
+        /**
+         * Displays a message in the chat history.
+         * @param {string|object} content The message text or an object for tool response.
+         * @param {'user'|'agent'} sender The sender of the message.
+         * @param {boolean} [isTyping=false] True if this is a typing indicator.
+         * @returns {HTMLElement} The created message element.
+         */
+        function displayMessage(content, sender, isTyping = false) {
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            let messageElement = document.createElement('div');
+            messageElement.className = `message ${sender}-message`;
+            
+            if (isTyping) {
+                messageElement.innerHTML = `
+                    <div class="message-header">
+                        <div class="avatar">A</div>
+                        <div class="message-sender">Gemini Flash</div>
+                    </div>
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                `;
+            } else {
+                let contentHtml = '';
+                if (typeof content === 'object' && content !== null) {
+                    contentHtml = formatToolResponse(content);
+                } else {
+                    contentHtml = content;
+                }
+                
+                messageElement.innerHTML = `
+                    <div class="message-header">
+                        <div class="avatar">${sender === 'user' ? 'U' : 'A'}</div>
+                        <div class="message-sender">${sender === 'user' ? 'You' : 'Gemini Flash'}</div>
+                    </div>
+                    <div class="message-content">
+                        ${contentHtml}
+                    </div>
+                    <div class="timestamp">${timestamp}</div>
+                `;
+            }
+            
+            chatHistoryDiv.appendChild(messageElement);
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+            return messageElement;
+        }
+
+        /**
+         * Removes a typing indicator element from the DOM.
+         * @param {HTMLElement} indicatorElement The typing indicator element to remove.
+         */
+        function removeTypingIndicator(indicatorElement) {
+            if (indicatorElement && indicatorElement.parentNode) {
+                indicatorElement.parentNode.removeChild(indicatorElement);
+            }
+        }
+
+        /**
+         * Enables or disables the user input field and send button.
+         * @param {boolean} enabled True to enable, false to disable.
+         */
+        function setInputEnabled(enabled) {
+            userInput.disabled = !enabled;
+            sendButton.disabled = !enabled;
+            if (enabled) {
+                userInput.focus();
+            }
+        }
+        
+        /**
+         * Formats a tool response object into a readable HTML string.
+         * @param {object} data The data object returned by a tool.
+         * @returns {string} HTML string for display.
+         */
+        function formatToolResponse(data) {
+            let html = '<div class="tool-response">';
+            html += '<div class="tool-response-header"><i class="fas fa-cogs"></i> Tool Output</div>';
+            html += '<div class="tool-response-content">';
+            
+            if (data.error) {
+                html += `<p style="color: var(--accent-color);"><strong>Error:</strong> ${data.error}</p>`;
+                if (data.solution) html += `<p><strong>Suggestion:</strong> ${data.solution}</p>`;
+                if (data.supportedCodes) html += `<p><strong>Supported Codes:</strong> ${data.supportedCodes.join(', ')}</p>`;
+            } else {
+                html += '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+            
+            html += '</div></div>';
+            return html;
+        }
+
+        // --- Core AI Agent Logic ---
+        /**
+         * Processes the user's message and interacts with the Gemini API, including tool calling.
+         * This function handles the LLM's turn and potential multi-turn tool interactions.
+         */
+        async function processAgentResponse() {
+            console.log("Starting processAgentResponse. Current History:", JSON.parse(JSON.stringify(History)));
+
+            let typingIndicator = null;
+            setInputEnabled(false);
+
+            try {
+                typingIndicator = displayMessage('', 'agent', true);
+
+                let currentTurnComplete = false;
+                while (!currentTurnComplete) {
+                    console.log("--- Sending request to Gemini API ---");
+                    console.log("Request Contents:", JSON.parse(JSON.stringify(History)));
+
+                    const requestBody = {
+                        contents: History,
+                        tools: [{
+                            functionDeclarations: [
+                                sumDeclaration, subtractDeclaration, multiplyDeclaration,
+                                primeDeclaration, cryptoDeclaration, weatherDeclaration,
+                                currencyDeclaration, wikiDeclaration, stockDeclaration
+                            ]
+                        }],
+                        tool_config: {
+                            function_calling_config: {
+                                mode: "AUTO"
+                            }
+                        },
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 2048,
+                        },
+                        systemInstruction: {
+                            parts: [{
+                                text: `You are an AI Agent named Gemini Flash. You have access to powerful tools to provide live data and perform calculations.
+                                Your capabilities include:
+                                - Mathematical calculations (sum, subtract, multiply, prime checks)
+                                - Current cryptocurrency prices (e.g., Bitcoin)
+                                - Live weather conditions for any city
+                                - Real-time currency conversions (use 3-letter codes like 'USD', 'EUR', 'INR'). Be smart about common names, e.g., "rupees" means INR.
+                                - Wikipedia knowledge lookup for any topic
+                                - Real-time stock market data (requires ticker symbol like 'AAPL', 'MSFT') by function but you analize the code of company and call the function give the argument Example user ask Find the price of tesla then you analize the ticker name of tesla is TSLA you auto call the function and give argument TSLA
+
+                                Use these tools when needed to accurately answer user queries. If a tool returns an error, inform the user clearly and try to suggest a solution if possible.
+                                Respond in a friendly, conversational, and concise manner, matching the user's language style.
+                                When using a tool, you should briefly mention what tool you're using or what data you're retrieving, then present the information clearly.
+                                After a tool call, always provide a textual summary or explanation of the tool's result.
+                                ALWAYS respond with text. Do not just output function calls without a preceding text explanation if possible.`
+                            }]
+                        }
+                    };
+
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        console.error("Gemini API request timed out after 30 seconds.");
+                        controller.abort();
+                    }, 30000);
+
+                    const response = await fetch(GEMINI_MODEL_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-goog-api-key': GEMINI_API_KEY
+                        },
+                        body: JSON.stringify(requestBody),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    const data = await response.json();
+                    console.log("Gemini Raw Response (received):", data);
+
+                    if (data.error) {
+                        console.error("Gemini API Error:", data.error);
+                        throw new Error(`Gemini API Error: ${data.error.message || 'Unknown API Error'}`);
+                    }
+
+                    const candidate = data.candidates?.[0];
+                    if (!candidate) {
+                        console.warn("No candidate found in Gemini response.");
+                        throw new Error("No valid response or completion from AI.");
+                    }
+
+                    const parts = candidate.content?.parts;
+                    if (!parts || parts.length === 0) {
+                        console.warn("No parts found in Gemini response content.");
+                        throw new Error("AI response content is empty.");
+                    }
+
+                    const firstPart = parts[0];
+
+                   // ... existing code ...
+
+                if (firstPart.functionCall) {
+                const { name, args } = firstPart.functionCall;
+                console.log(`AI requested function call: ${name} with args:`, args);
+
+                const funCall = availableTools[name];
+                if (!funCall) {
+                    console.error(`Tool "${name}" not found in availableTools.`);
+                    const errorMessage = `Error: Tool "${name}" not found.`;
+                    History.push({ role: "model", parts: [{ functionCall: firstPart.functionCall }] });
+                    History.push({ role: "user", parts: [{ functionResponse: { name: name, response: { error: errorMessage } } }] });
+                    continue; 
+                }
+
+                // Execute the tool function (NO DISPLAY TO USER)
+                let toolResult;
+                try {
+                    toolResult = await funCall(args);
+                    console.log(`Tool "${name}" result:`, toolResult);
+                } catch (toolError) {
+                    console.error(`Error executing tool "${name}":`, toolError);
+                    toolResult = { error: `Failed to execute tool "${name}": ${toolError.message || toolError}` };
+                }
+
+                // Add to history but DON'T display to user
+                History.push({
+                    role: "model",
+                    parts: [{ functionCall: firstPart.functionCall }]
+                });
+                History.push({
+                    role: "user",
+                    parts: [{ functionResponse: { name: name, response: { result: toolResult } } }]
+                });
+                console.log("History updated with tool call/response. Looping back to Gemini.");
+
+                } else if (firstPart.text) {
+                // Only display the LLM's final response
+                console.log("Gemini responded with text:", firstPart.text);
+                removeTypingIndicator(typingIndicator);
+                displayMessage(firstPart.text, 'agent');
+                History.push({ role: 'model', parts: [{ text: firstPart.text }] });
+                currentTurnComplete = true;
+                }
+                     else {
+                        console.warn("Unexpected part type in response:", firstPart);
+                        throw new Error("AI response contains an unexpected part type, or is incomplete.");
+                    }
+                }
+            } catch (error) {
+                console.error("Overall chat flow error:", error);
+                if (typingIndicator) {
+                    removeTypingIndicator(typingIndicator);
+                }
+                displayMessage(`Sorry, I encountered an error: ${error.message}. Please try again.`, 'agent');
+            } finally {
+                setInputEnabled(true);
+            }
+        }
+
+        // --- Event Listeners ---
+        function handleUserMessage() {
+            const userText = userInput.value.trim();
+            if (userText) {
+                displayMessage(userText, 'user');
+                userInput.value = '';
+                History.push({ role: 'user', parts: [{ text: userText }] });
+                processAgentResponse();
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserMessage);
+
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                handleUserMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Suggestion click handler
+        suggestions.forEach(suggestion => {
+            suggestion.addEventListener('click', () => {
+                userInput.value = suggestion.textContent.replace(/.*?\s/, '');
+                userInput.dispatchEvent(new Event('input'));
+                userInput.focus();
+            });
+        });
+
+        // Tool button handlers
+        toolButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const toolPrompts = [
+                    "What's the weather in my location?",
+                    "What's the current price of Bitcoin?",
+                    "Calculate 256 × 128 for me",
+                    "Price of Tesla Stock",
+                    "Convert 100 US dollars to Euros"
+                ];
+                userInput.value = toolPrompts[index];
+                userInput.dispatchEvent(new Event('input'));
+                userInput.focus();
+            });
+        });
+
+        // Focus input on load
+        userInput.focus();
+    </script>
+</body>
+</html>

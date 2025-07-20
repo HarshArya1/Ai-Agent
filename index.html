@@ -1128,7 +1128,7 @@
          * This function handles the LLM's turn and potential multi-turn tool interactions.
          */
         async function processAgentResponse() {
-            console.log("Starting processAgentResponse. Current History:", JSON.parse(JSON.stringify(History)));
+            // console.log("Starting processAgentResponse. Current History:", JSON.parse(JSON.stringify(History)));
 
             let typingIndicator = null;
             setInputEnabled(false);
@@ -1138,8 +1138,8 @@
 
                 let currentTurnComplete = false;
                 while (!currentTurnComplete) {
-                    console.log("--- Sending request to Gemini API ---");
-                    console.log("Request Contents:", JSON.parse(JSON.stringify(History)));
+                    // console.log("--- Sending request to Gemini API ---");
+                    // console.log("Request Contents:", JSON.parse(JSON.stringify(History)));
 
                     const requestBody = {
                         contents: History,
@@ -1199,7 +1199,7 @@
                     clearTimeout(timeoutId);
 
                     const data = await response.json();
-                    console.log("Gemini Raw Response (received):", data);
+                    // console.log("Gemini Raw Response (received):", data);
 
                     if (data.error) {
                         console.error("Gemini API Error:", data.error);
@@ -1224,7 +1224,7 @@
 
                 if (firstPart.functionCall) {
                 const { name, args } = firstPart.functionCall;
-                console.log(`AI requested function call: ${name} with args:`, args);
+                // console.log(`AI requested function call: ${name} with args:`, args);
 
                 const funCall = availableTools[name];
                 if (!funCall) {
@@ -1239,7 +1239,7 @@
                 let toolResult;
                 try {
                     toolResult = await funCall(args);
-                    console.log(`Tool "${name}" result:`, toolResult);
+                    // console.log(`Tool "${name}" result:`, toolResult);
                 } catch (toolError) {
                     console.error(`Error executing tool "${name}":`, toolError);
                     toolResult = { error: `Failed to execute tool "${name}": ${toolError.message || toolError}` };
@@ -1254,11 +1254,11 @@
                     role: "user",
                     parts: [{ functionResponse: { name: name, response: { result: toolResult } } }]
                 });
-                console.log("History updated with tool call/response. Looping back to Gemini.");
+                // console.log("History updated with tool call/response. Looping back to Gemini.");
 
                 } else if (firstPart.text) {
                 // Only display the LLM's final response
-                console.log("Gemini responded with text:", firstPart.text);
+                // console.log("Gemini responded with text:", firstPart.text);
                 removeTypingIndicator(typingIndicator);
                 displayMessage(firstPart.text, 'agent');
                 History.push({ role: 'model', parts: [{ text: firstPart.text }] });

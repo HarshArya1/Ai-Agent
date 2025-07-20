@@ -1,23 +1,20 @@
 {
   "version": 2,
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/Day04/AIAgent.html",
-      "headers": {
-        "Content-Type": "text/html"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "status": 404,
-      "dest": "/Day04/AIAgent.html"
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/Day04/AIAgent.html"
+      "destination": "/AIAgent.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Type", 
+          "value": "text/html"
+        }
+      ]
     }
   ]
 }

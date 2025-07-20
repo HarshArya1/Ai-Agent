@@ -733,8 +733,7 @@
 
         async function getWeather({location}){
             try {
-                const response = await fetch(`http://api.weatherapi.com/v1/current.json?key=e9457d34f0374f9abf0113351252001&q=${location}&aqi=no`);
-                console.log(response);
+                const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=e9457d34f0374f9abf0113351252001&q=${location}&aqi=no`);
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`Weather API request failed with status ${response.status}: ${errorText}`);
